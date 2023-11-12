@@ -3,8 +3,18 @@ from tortoise.contrib.fastapi import register_tortoise
 from models import User_Pydantic, UserIn_Pydantic, User
 from pydantic import BaseModel
 from starlette.exceptions import HTTPException
+from authentication import get_hashed_password
 
 app = FastAPI()
+
+"""
+{
+  "first_name": "test2",
+  "last_name": "user2",
+  "email": "user2@email.com",
+  "password": "213435fsdfsdf"
+}
+"""
 
 
 class Status(BaseModel):
@@ -16,8 +26,9 @@ async def root():
     return {"message": "Hello World"}
 
 
-@app.post("/users", response_model=User_Pydantic)
+@app.post("/registration", response_model=User_Pydantic)
 async def create_user(user: UserIn_Pydantic):
+    user.password = get_hashed_password(user.password)
     user_obj = await User.create(**user.model_dump(exclude_unset=True))
     return await User_Pydantic.from_tortoise_orm(user_obj)
 

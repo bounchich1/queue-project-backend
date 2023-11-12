@@ -11,7 +11,7 @@ load_dotenv()
 secret_key = os.getenv('SECRET')
 cookie_transport = CookieTransport(cookie_name='test', cookie_max_age=3600)
 
-pwd_context = CryptContext(schemes=['argon2', 'bcrypt'], deprecated='auto')
+pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 

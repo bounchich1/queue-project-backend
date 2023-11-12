@@ -4,14 +4,14 @@ from tortoise.contrib.pydantic import pydantic_model_creator
 
 class User(models.Model):
     id = fields.IntField(pk=True)
-    first_name = fields.CharField(max_length=100)
-    last_name = fields.CharField(max_length=100)
-    email = fields.CharField(max_length=150, unique=True)
-    password = fields.CharField(max_length=128)
+    first_name = fields.CharField(max_length=100, null=True)
+    last_name = fields.CharField(max_length=100, null=True)
+    email = fields.CharField(max_length=150, unique=True, null=True)
+    password = fields.CharField(max_length=60, null=True)
     created_at = fields.DatetimeField(auto_now_add=True)
 
-    class PydanticMeta:
-        exclude = ("password_hash", "created_at")
+    class Meta:
+        exclude = ["password"]
 
 
 class InfoQueue(models.Model):
@@ -25,7 +25,7 @@ class InfoQueue(models.Model):
         exclude = ('queued_person', 'created_at')
 
 
-User_Pydantic = pydantic_model_creator(User, name="User")
-UserIn_Pydantic = pydantic_model_creator(User, name="UserIn", exclude_readonly=True)
+User_Pydantic = pydantic_model_creator(User, name="User", exclude=('password',))
+UserIn_Pydantic = pydantic_model_creator(User, name="UserIn", exclude_readonly=True, exclude=('created_at',))
 InfoQueue_Pydantic = pydantic_model_creator(InfoQueue, name='InfoQueue')
 InfoQueueIn_Pydantic = pydantic_model_creator(InfoQueue, name="InfoQueueIn", exclude_readonly=True)
