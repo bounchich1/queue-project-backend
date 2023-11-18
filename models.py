@@ -22,10 +22,10 @@ class InfoQueue(models.Model):
     modified_at = fields.DatetimeField(auto_now=True)
 
     class PydanticMeta:
-        exclude = ('queued_person', 'created_at')
+        exclude = ['created_at']
 
 
-User_Pydantic = pydantic_model_creator(User, name="User", exclude=('password',))
+User_Pydantic = pydantic_model_creator(User, name="User")
 UserIn_Pydantic = pydantic_model_creator(User, name="UserIn", exclude_readonly=True, exclude=('created_at',))
 InfoQueue_Pydantic = pydantic_model_creator(InfoQueue, name='InfoQueue')
 InfoQueueIn_Pydantic = pydantic_model_creator(InfoQueue, name="InfoQueueIn", exclude_readonly=True)
