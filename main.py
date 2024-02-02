@@ -1,16 +1,16 @@
 import os
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Depends, status, WebSocket
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi.security import OAuth2PasswordRequestForm
 from tortoise.contrib.fastapi import register_tortoise
 from models import User_Pydantic, UserIn_Pydantic, User, InfoQueue_Pydantic, InfoQueueIn_Pydantic, InfoQueue
 from pydantic import BaseModel
 from starlette.exceptions import HTTPException
 from authentication import get_hashed_password, authenticate_user, create_access_token, get_current_user
 from typing import Annotated, List
-from datetime import datetime, timedelta
+from datetime import timedelta
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
+from fastapi_mail import FastMail, ConnectionConfig
 
 app = FastAPI()
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
@@ -78,7 +78,6 @@ conf = ConnectionConfig(
     MAIL_SSL_TLS=False,
     USE_CREDENTIALS=True,
     VALIDATE_CERTS=True,
-    FASTAPI_MAIL_DEBUG=True,
 )
 
 fm = FastMail(conf)
@@ -114,11 +113,6 @@ async def create_user(user: UserIn_Pydantic):
         data={"sub": user.email}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
-
-
-@app.get("/user/{user_id}", response_model=User_Pydantic)
-async def get_user(user_id: int):
-    return await User_Pydantic.from_queryset_single(User.get(id=user_id))
 
 
 @app.delete("/user/{user_id}", response_model=Status)
