@@ -1,6 +1,4 @@
-import os
-from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Depends, status, WebSocket
+from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from tortoise.contrib.fastapi import register_tortoise
 from models import User_Pydantic, UserIn_Pydantic, User, InfoQueue_Pydantic, InfoQueueIn_Pydantic, InfoQueue
@@ -10,11 +8,15 @@ from authentication import get_hashed_password, authenticate_user, create_access
 from typing import Annotated, List
 from datetime import datetime, timedelta
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 
 app = FastAPI()
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 """
+
+TO DO:
+1. Add queue get/post requests with token verification
+2. Add dequeue post request with token verification
+
 {
   "first_name": "test2",
   "last_name": "user2",
@@ -41,11 +43,6 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
   "password": "123456"
 }
 """
-
-load_dotenv()
-
-mail_username = os.getenv('MAIL_USERNAME')
-mail_password = os.getenv('MAIL_PASSWORD')
 register_tortoise(
     app,
     db_url='sqlite://db.sqlite3',
@@ -67,21 +64,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-conf = ConnectionConfig(
-    MAIL_USERNAME=mail_username,
-    MAIL_PASSWORD=mail_password,
-    MAIL_FROM='kakoytochelick465@gmail.com',
-    MAIL_PORT=587,
-    MAIL_SERVER='smtp.gmail.com',
-    MAIL_STARTTLS=True,
-    MAIL_SSL_TLS=False,
-    USE_CREDENTIALS=True,
-    VALIDATE_CERTS=True,
-    FASTAPI_MAIL_DEBUG=True,
-)
-
-fm = FastMail(conf)
 
 
 class Token(BaseModel):
@@ -130,9 +112,7 @@ async def delete_user(user_id: int):
 
 
 @app.post("/token", response_model=Token)
-async def login_for_access_token(
-        form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
-):
+async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     user = await authenticate_user(form_data.username, form_data.password)
     if not user:
         raise HTTPException(
@@ -181,78 +161,3 @@ async def complete_queue(subject: int, current_user: User_Pydantic = Depends(get
     if not end_queue:
         raise HTTPException(status_code=404, detail=f"{current_last_name} not found")
     return await InfoQueue.all().order_by('task_number', 'created_at').filter(subject_number=subject).values()
-
-
-"""
-DOES NOT ALLOW TO PROCEED HTTP REQUESTS WHILE WEBSOCKET CONNECTION IS OPENED
-
-TODO: implement a websocket somewhere in the future..
-
-connected_users = set()
-
-@app.websocket('/ws/{subject}')
-async def websocket_endpoint(websocket: WebSocket, subject: int):
-    current_user = await read_users_me()
-    if not current_user:
-        raise HTTPException(status_code=400, detail='You are not permitted to connect')
-    await websocket.accept()
-    connected_users.add(websocket)
-
-    try:
-        initial_queue_data = await get_queue_1(subject)
-        await websocket.send_json(initial_queue_data)
-
-        while True:
-            update_queue_data = await get_queue_1(subject)
-            await websocket.send_json(update_queue_data)
-
-    except Exception as error:
-        print(f'Websocket connection lost {error}')
-        connected_users.remove(websocket)
-
-
-async def get_queue_1(subject: int) -> List:
-    queue_data = await InfoQueue.all().order_by('task_number', 'created_at').filter(subject_number=subject).values()
-    serialized_queue_data = []
-    for item in queue_data:
-        serialized_item = {
-            'position': item['position'],
-            'first_name': item['first_name'],
-            'last_name': item['last_name'],
-            'task_number': item['task_number'],
-            'subject_number': item['subject_number'],
-            'created_at': item['created_at'].isoformat(),
-            'modified_at': item['modified_at'].isoformat() if item['modified_at'] else None
-        }
-        serialized_queue_data.append(serialized_item)
-
-    return serialized_queue_data
-
-
-
-    FRONTEND SOLUTION
-    
-    
-    connectWebSocket(queueNumber){
-    this.socket = new WebSocket(`ws://127.0.0.1:8000/ws/${queueNumber}`);
-
-    this.socket.onopen = () => {
-      console.log('WebSocket connection is opened');
-    };
-    this.socket.onmessage = (event) => {
-      const receivedData = JSON.parse(event.data);
-      this.jsonDataList = receivedData;
-      console.log(this.jsonDataList)  
-    };
-    this.socket.onerror = (error) => {
-      console.error('WebSocket error', error);
-    };
-  },
-  
-  
-    beforeUnmount() {
-    if (this.socket != null) {
-      this.socket.close();
-    }
-  },
-"""

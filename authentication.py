@@ -13,7 +13,7 @@ from typing import Annotated
 load_dotenv()
 secret_key = os.getenv('SECRET')
 algorithm = 'HS256'
-cookie_transport = CookieTransport(cookie_name='test', cookie_max_age=3600)
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
@@ -60,17 +60,6 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     return encoded_jwt
 
 
-def create_verification_token(data: dict, expires_delta: timedelta | None = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
-    encoded_verify_jwt = jwt.encode(to_encode, secret_key, algorithm=algorithm)
-    return encoded_verify_jwt
-
-
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -88,3 +77,6 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     if user is None:
         raise credentials_exception
     return user
+
+
+
