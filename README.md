@@ -8,3 +8,4 @@
 * [FastAPI](https://fastapi.tiangolo.com/) -> Базовый фреймворк
 * [Tortoise ORM](https://tortoise.github.io/) -> Библиотека для удобного взаимодействия между фреймворком и базой данных
 * [JWT](https://jwt.io/introduction) -> Основная информация о сущности JWT(Json Web Token)
+* [Основы баз данных](https://www.lido.app/post/database-101) -> Довольно хорошо написанная статья очень советую (googletranslate/deepl в помощь)
