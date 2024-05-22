@@ -1,4 +1,7 @@
 import os
+import secrets
+import string
+
 from passlib.context import CryptContext
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -79,4 +82,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     return user
 
 
-
+def generate_invitation_token(length=10):
+    characters = string.ascii_letters + string.digits
+    token = ''.join(secrets.choice(characters) for _ in range(length))
+    return token
