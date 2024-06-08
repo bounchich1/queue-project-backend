@@ -139,8 +139,8 @@ async def send_verification_email(email: str, token: str):
 @app.get("/user/{user_id}", response_model=User_Pydantic)
 async def get_user(user_id: int):
     return await User_Pydantic.from_queryset_single(User.get(id=user_id))
-
-
+  
+  
 @app.delete("/user/{user_id}", response_model=Status)
 async def delete_user(user_id: int):
     deleted_count = await User.filter(id=user_id).delete()
