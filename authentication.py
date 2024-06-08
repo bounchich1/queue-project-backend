@@ -1,16 +1,22 @@
 import os
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+import secrets
+import string
+
+from passlib.context import CryptContext
+from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from passlib.context import CryptContext
+from fastapi_users.authentication import CookieTransport, JWTStrategy, AuthenticationBackend
 from dotenv import load_dotenv
 from models import User, User_Pydantic
-
+from typing import Annotated
 
 load_dotenv()
 secret_key = os.getenv('SECRET')
 algorithm = 'HS256'
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
@@ -57,17 +63,6 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     return encoded_jwt
 
 
-def create_verification_token(data: dict, expires_delta: timedelta | None = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
-    encoded_verify_jwt = jwt.encode(to_encode, secret_key, algorithm=algorithm)
-    return encoded_verify_jwt
-
-
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -85,3 +80,9 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     if user is None:
         raise credentials_exception
     return user
+
+
+def generate_invitation_token(length=10):
+    characters = string.ascii_letters + string.digits
+    token = ''.join(secrets.choice(characters) for _ in range(length))
+    return token
