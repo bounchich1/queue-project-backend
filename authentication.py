@@ -2,16 +2,14 @@ import os
 import secrets
 import string
 
-from passlib.context import CryptContext
-from fastapi import Depends, FastAPI, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from passlib.context import CryptContext
-from fastapi_users.authentication import CookieTransport, JWTStrategy, AuthenticationBackend
 from dotenv import load_dotenv
 from models import User, User_Pydantic
-from typing import Annotated
+
 
 load_dotenv()
 secret_key = os.getenv('SECRET')

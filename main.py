@@ -1,13 +1,13 @@
 import os
 from fastapi import FastAPI, HTTPException, Depends, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm
 from tortoise.contrib.fastapi import register_tortoise
 from models import User_Pydantic, UserIn_Pydantic, User, InfoQueue_Pydantic, InfoQueueIn_Pydantic, InfoQueue, \
-    Subjects_Pydantic, SubjectsIn_Pydantic, Subjects, Tokens_Pydantic, Tokens, TokensIn_Pydantic, Subscription, \
+    Subjects_Pydantic, SubjectsIn_Pydantic, Subjects, Tokens_Pydantic, Tokens, Subscription, \
     Subscription_Pydantic, SubscriptionIn_Pydantic, UserOut_Pydantic, Groups, Groups_Pydantic, GroupsIn_Pydantic, \
     SubjectsUpd_Pydantic
 from pydantic import BaseModel
-from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
+from fastapi_mail import FastMail, ConnectionConfig
 from starlette.exceptions import HTTPException
 from dotenv import load_dotenv
 from authentication import get_hashed_password, authenticate_user, create_access_token, get_current_user, \
@@ -22,38 +22,7 @@ username = os.getenv('SECRET_EMAIL')
 password = os.getenv('SECRET_PASSWORD')
 app = FastAPI()
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
-"""
 
-TO DO:
-1. Add queue get/post requests with token verification
-2. Add dequeue post request with token verification
-
-{
-  "first_name": "test2",
-  "last_name": "user2",
-  "email": "user2@email.com",
-  "password": "213435fsdfsdf"
-}
-
-{
-  "first_name": "test_token",
-  "last_name": "user_token",
-  "email": "user_token@email.com",
-  "password": "123456"
-}
-{
-  "first_name": "test2_token",
-  "last_name": "user2_token",
-  "email": "user_token2@email.com",
-  "password": "123456"
-}
-{
-  "first_name": "test3_token",
-  "last_name": "user3_token",
-  "email": "user_token3@email.com",
-  "password": "123456"
-}
-"""
 conf = ConnectionConfig(
     MAIL_USERNAME=username,
     MAIL_PASSWORD=password,
@@ -80,6 +49,10 @@ origins = [
     'http://localhost:5173/',
     'http://localhost:5173/registration',
     'http://localhost:5173/dashboard',
+    'http://localhost:4173/',
+    'http://localhost:4173/registration',
+    'http://localhost:4173/dashboard',
+    'http://localhost:4173',
 ]
 app.add_middleware(
     CORSMiddleware,
